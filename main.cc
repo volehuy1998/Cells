@@ -3,8 +3,8 @@
 #include <random> 
 #include <vector>
 #include <SDL2/SDL.h>
-#define DEBUG 1
-#define LEVEL 1 
+#define DEBUG 0
+#define LEVEL 3 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -50,7 +50,7 @@ struct Blob
 	}
 };
 
-std::vector<Blob*> blobs(5);
+std::vector<Blob*> blobs(7);
 
 int dist(int x1, int y1, int x2, int y2)
 {
@@ -128,6 +128,12 @@ void setup_screen_texture()
 				}
 
 			}
+#if LEVEL == 0
+			if (sum > 0xff) sum = 0xff;
+			((unsigned char*)pixels)[index + 0] = sum;
+			((unsigned char*)pixels)[index + 1] = sum;
+			((unsigned char*)pixels)[index + 2] = sum;
+#endif
 #if LEVEL == 1
 			((unsigned char*)pixels)[index + 0] = 0x0;
 			((unsigned char*)pixels)[index + 1] = sum;
