@@ -4,11 +4,12 @@
 #include <vector>
 #include <SDL2/SDL.h>
 
-#define DEBUG
-#define LEVEL 4 
+//#define DEBUG
+#define LEVEL 0 
 
 #if LEVEL > 3
 #undef LEVEL
+#define DEBUG
 #endif
 
 constexpr int CUSTOM_BPP    = 3;
@@ -161,14 +162,14 @@ void setup_success_screen_texture()
 				sum += 80 * blobs.self[0]->r / d;
 				if (x == blob->pos.x && y == blob->pos.y && sum < 0xff)
 				{
-#ifdef DEBUG
-					std::fprintf(stderr, "%d %d %d %d\n", x, y, d, sum);
-#endif
 					sum = 0xff;
+#ifdef DEBUG
+					std::fprintf(stderr, "Debug at %d: %d %d %d %d\n", __LINE__, x, y, d, sum);
+#endif
 				}
 
 			}
-#if LEVEL % 2 == 0
+#if LEVEL == 0 || LEVEL == 2
 			if (sum > 0xff) sum = 0xff;
 #endif
 #if LEVEL == 0
