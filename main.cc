@@ -4,7 +4,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #define DEBUG
-//#define LEVEL 3 
+#define LEVEL 3 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -35,7 +35,7 @@ struct Blob
 	float r;
 	Blob()
 	{
-		pos.x = random_machine.get(50, SCREEN_WIDTH - 50);
+		pos.x = random_machine.get(50, SCREEN_WIDTH  - 50);
 		pos.y = random_machine.get(50, SCREEN_HEIGHT - 50);
 		vel.x = random_machine.get( 3,  7);
 		vel.y = random_machine.get(-7, -3);
@@ -174,6 +174,7 @@ void setup_error_screen_texture()
 	constexpr int cnt = sizeof color / sizeof(int);
 	constexpr int colors = cnt / col;
 	constexpr int stride = SCREEN_WIDTH / colors;
+	int col_remainder = 0;
 	SDL_LockTexture(screen_texture, nullptr, &pixels, &pitch);
 	for (int j = 0; j < colors; j++)
 	{
@@ -186,10 +187,21 @@ void setup_error_screen_texture()
 				((unsigned char*)pixels)[index + 1] = color[(j * 3) % cnt + 1];
 				((unsigned char*)pixels)[index + 2] = color[(j * 3) % cnt + 2];
 			}
+			col_remainder = x;
 		}
 	}
+	while (col_remainder < SCREEN_WIDTH)
+	{
+		for (int y = 0; y < SCREEN_HEIGHT; y++)
+		{
+			int index = y * pitch + col_remainder * 4;
+			((unsigned char*)pixels)[index + 0] = color[(cnt - col) + 0];
+			((unsigned char*)pixels)[index + 1] = color[(cnt - col) + 1];
+			((unsigned char*)pixels)[index + 2] = color[(cnt - col) + 2];
+		}
+		col_remainder++;
+	}
 	SDL_UnlockTexture(screen_texture);
-
 }
 
 int main (int, char**)
@@ -199,7 +211,7 @@ int main (int, char**)
 #endif
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		SDL_Log("Error SDL Init: %s", SDL_GetError());
+		fprintf(stderr, "Error SDL Init: %s", SDL_GetError());
 		return 1;
 	}
 
