@@ -87,9 +87,9 @@ RgbColor HSV2RGB(HsvColor hsv)
     region = hsv.h / 43;
     remainder = (hsv.h - (region * 43)) * 6; 
 
-    p = (hsv.v * (255 - hsv.s)) >> 8;
-    q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
-    t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
+    p = (hsv.v * (0xff - hsv.s)) >> 8;
+    q = (hsv.v * (0xff - ((hsv.s * remainder) >> 8))) >> 8;
+    t = (hsv.v * (0xff - ((hsv.s * (0xff - remainder)) >> 8))) >> 8;
 
     switch (region)
     {
@@ -117,6 +117,8 @@ void setup_screen_texture()
 			for (auto& blob : blobs) {
 				int d = dist(x, y, blob->pos.x, blob->pos.y);
 				sum += 40 * blobs[0]->r / d;
+				if (x == blob->pos.x && y == blob->pos.y && sum < 0xff) sum = 0xff;
+
 			}
 			HsvColor hsv;
 			hsv.h = sum;
