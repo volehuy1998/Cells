@@ -12,6 +12,9 @@
 #define DEBUG
 #endif
 
+using byte = unsigned char;
+
+constexpr int octet         = 8; // use for algorithm HSV to RGV rule
 constexpr int CUSTOM_BPP    = 3;
 constexpr int SDL_BPP 	 	= 4;
 constexpr int SCREEN_WIDTH  = 550;
@@ -85,15 +88,13 @@ int dist(int x1, int y1, int x2, int y2)
 
 typedef struct HsvColor
 {
-    unsigned char h;
-    unsigned char s;
-    unsigned char v;
+    byte h, s, v;
 } HsvColor;
 
 SDL_Color HSV2RGB(HsvColor hsv)
 {
     SDL_Color rgb;
-    unsigned char region, remainder, p, q, t;
+    byte region, remainder, p, q, t;
 
     if (hsv.s == 0)
     {
@@ -106,9 +107,9 @@ SDL_Color HSV2RGB(HsvColor hsv)
     region = hsv.h / 43;
     remainder = (hsv.h - (region * 43)) * 6; 
 
-    p = (hsv.v * (0xff - hsv.s)) >> 8;
-    q = (hsv.v * (0xff - ((hsv.s * remainder) >> 8))) >> 8;
-    t = (hsv.v * (0xff - ((hsv.s * (0xff - remainder)) >> 8))) >> 8;
+    p = (hsv.v * (0xff - hsv.s)) >> octet;
+    q = (hsv.v * (0xff - ((hsv.s * remainder) >> octet))) >> octet;
+    t = (hsv.v * (0xff - ((hsv.s * (0xff - remainder)) >> octet))) >> octet;
 
     switch (region)
     {
@@ -125,14 +126,14 @@ SDL_Color HSV2RGB(HsvColor hsv)
 void assign(const void* pixel, const int& index, const int& value)
 {
 	for (int i = 0; i < CUSTOM_BPP; i++)
-		((unsigned char*)pixel)[index + i] = value;
+		((byte*)pixel)[index + i] = value;
 }
 
 void assign(const void *pixel, const int& index, const int& r, const int& g, const int& b)
 {
-	((unsigned char*)pixel)[index + 0] = r;
-	((unsigned char*)pixel)[index + 1] = g;
-	((unsigned char*)pixel)[index + 2] = b;
+	((byte*)pixel)[index + 0] = r;
+	((byte*)pixel)[index + 1] = g;
+	((byte*)pixel)[index + 2] = b;
 }
 
 void assign(const void *pixel, const int& index, const SDL_Color& rgb)
@@ -143,7 +144,7 @@ void assign(const void *pixel, const int& index, const SDL_Color& rgb)
 void assign(const void *pixel_left, const int& index_left, const int* pixel_right, const int& index_right)
 {
 	for (int i = 0; i < CUSTOM_BPP; i++)
-		((unsigned char*)pixel_left)[index_left + i] = pixel_right[index_right + i];
+		((byte*)pixel_left)[index_left + i] = pixel_right[index_right + i];
 }
 
 void setup_success_screen_texture()
