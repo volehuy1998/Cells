@@ -3,8 +3,8 @@
 #include <random> 
 #include <vector>
 #include <SDL2/SDL.h>
-#define DEBUG 0
-#define LEVEL 3 
+#define DEBUG
+//#define LEVEL 3 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -171,20 +171,20 @@ void setup_error_screen_texture()
 		0x00, 0x00, 0xff, // blue
 	};
 	constexpr int col = 3;
-	constexpr int cnt = sizeof(int) * col;
-	constexpr int colors = sizeof color / cnt;
+	constexpr int cnt = sizeof color / sizeof(int);
+	constexpr int colors = cnt / col;
 	constexpr int stride = SCREEN_WIDTH / colors;
 	SDL_LockTexture(screen_texture, nullptr, &pixels, &pitch);
-	for (int j = 0, i = 0; j < colors; j++, i = (i + 3) % cnt)
+	for (int j = 0; j < colors; j++)
 	{
 		for (int x = j * stride; x < (j + 1) * stride; x++)
 		{
 			for (int y = 0; y < SCREEN_HEIGHT; y++)
 			{
 				int index = y * pitch + x * 4;
-				((unsigned char*)pixels)[index + 0] = color[i + 0];
-				((unsigned char*)pixels)[index + 1] = color[i + 1];
-				((unsigned char*)pixels)[index + 2] = color[i + 2];
+				((unsigned char*)pixels)[index + 0] = color[(j * 3) % cnt + 0];
+				((unsigned char*)pixels)[index + 1] = color[(j * 3) % cnt + 1];
+				((unsigned char*)pixels)[index + 2] = color[(j * 3) % cnt + 2];
 			}
 		}
 	}
