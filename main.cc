@@ -1,10 +1,11 @@
 #include <cmath>
-#include <stdio.h>
+#include <cstdio>
 #include <random> 
 #include <vector>
+#include <memory>
 #include <SDL2/SDL.h>
 #define DEBUG
-//#define LEVEL 0 
+#define LEVEL 1 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -50,7 +51,22 @@ struct Blob
 	}
 };
 
-std::vector<Blob*> blobs(7);
+struct Blobs
+{
+	std::vector<Blob*> self;
+	explicit Blobs(const int& n) : self(n)
+	{
+		for (auto& blob : self) blob = new Blob();
+	}
+	void update()
+	{
+		for (auto& blob : self) blob->update();
+	}
+	~Blobs()
+	{
+		for (auto& blob : self) delete blob;
+	}
+} blobs(7);
 
 int dist(int x1, int y1, int x2, int y2)
 {
@@ -59,13 +75,6 @@ int dist(int x1, int y1, int x2, int y2)
 	return d;
 }
 
-typedef struct RgbColor
-{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} RgbColor;
-
 typedef struct HsvColor
 {
     unsigned char h;
@@ -73,9 +82,9 @@ typedef struct HsvColor
     unsigned char v;
 } HsvColor;
 
-RgbColor HSV2RGB(HsvColor hsv)
+SDL_Color HSV2RGB(HsvColor hsv)
 {
-    RgbColor rgb;
+    SDL_Color rgb;
     unsigned char region, remainder, p, q, t;
 
     if (hsv.s == 0)
@@ -118,7 +127,7 @@ void assign(const void *pixel, const int& index, const int& r, const int& g, con
 	((unsigned char*)pixel)[index + 2] = b;
 }
 
-void assign(const void *pixel, const int& index, const RgbColor& rgb)
+void assign(const void *pixel, const int& index, const SDL_Color& rgb)
 {
 	assign(pixel, index, rgb.r, rgb.g, rgb.b);
 }
@@ -140,13 +149,13 @@ void setup_success_screen_texture()
 		{
 			int index = y * pitch + x * 4;
 			int sum = 0x0;
-			for (auto& blob : blobs) {
+			for (auto& blob : blobs.self) {
 				int d = dist(x, y, blob->pos.x, blob->pos.y);
-				sum += 80 * blobs[0]->r / d;
+				sum += 80 * blobs.self[0]->r / d;
 				if (x == blob->pos.x && y == blob->pos.y && sum < 0xff)
 				{
 #ifdef DEBUG
-					fprintf(stderr, "%d %d %d %d\n", x, y, d, sum);
+					std::fprintf(stderr, "%d %d %d %d\n", x, y, d, sum);
 #endif
 					sum = 0xff;
 				}
@@ -166,7 +175,7 @@ void setup_success_screen_texture()
 			hsv.h = sum;
 			hsv.s = 0xff;
 			hsv.v = 0xff;
-			const RgbColor& rgb = HSV2RGB(hsv);
+			const SDL_Color& rgb = HSV2RGB(hsv);
 			assign(pixels, index, rgb);
 #endif
 		}
@@ -223,18 +232,17 @@ void setup_error_screen_texture()
 int main (int, char**)
 {
 #ifdef DEBUG
-	freopen("out", "w", stderr);
+	std::freopen("out", "w", stderr);
 #endif
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		fprintf(stderr, "Error SDL Init: %s", SDL_GetError());
+		std::fprintf(stderr, "Error SDL Init: %s", SDL_GetError());
 		return 1;
 	}
 
 	window = SDL_CreateWindow("Cells", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
-	for (auto& blob : blobs) blob = new Blob();
 	while (!quit)
 	{
 		SDL_Event event;
@@ -251,11 +259,10 @@ int main (int, char**)
 		setup_error_screen_texture();
 #endif
 		SDL_RenderCopy(renderer, screen_texture, nullptr, nullptr);
-		for (auto& b : blobs) b->update();
+		blobs.update();
 		SDL_RenderPresent(renderer);
 	}
 	
-	for (auto& b : blobs) delete b;
 	SDL_DestroyTexture(screen_texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
