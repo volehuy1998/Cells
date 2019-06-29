@@ -4,8 +4,12 @@
 #include <vector>
 #include <memory>
 #include <SDL2/SDL.h>
+
 #define DEBUG
-#define LEVEL 1 
+#define LEVEL 3 
+
+constexpr int CUSTOM_BPP    = 3;
+constexpr int SDL_BPP 	 	= 4;
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -116,7 +120,7 @@ SDL_Color HSV2RGB(HsvColor hsv)
 
 void assign(const void* pixel, const int& index, const int& value)
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < CUSTOM_BPP; i++)
 		((unsigned char*)pixel)[index + i] = value;
 }
 
@@ -134,7 +138,7 @@ void assign(const void *pixel, const int& index, const SDL_Color& rgb)
 
 void assign(const void *pixel_left, const int& index_left, const int* pixel_right, const int& index_right)
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < CUSTOM_BPP; i++)
 		((unsigned char*)pixel_left)[index_left + i] = pixel_right[index_right + i];
 }
 
@@ -147,7 +151,7 @@ void setup_success_screen_texture()
 	{
 		for (int x = 0; x < SCREEN_WIDTH; x++)
 		{
-			int index = y * pitch + x * 4;
+			int index = y * pitch + x * SDL_BPP;
 			int sum = 0x0;
 			for (auto& blob : blobs.self) {
 				int d = dist(x, y, blob->pos.x, blob->pos.y);
@@ -210,8 +214,8 @@ void setup_error_screen_texture()
 		{
 			for (int y = 0; y < SCREEN_HEIGHT; y++)
 			{
-				const int index = y * pitch + x * 4;
-				assign(pixels, index, color, (j * 3) % cnt);
+				const int index = y * pitch + x * SDL_BPP;
+				assign(pixels, index, color, (j * CUSTOM_BPP) % cnt);
 			}
 			col_remainder = x;
 		}
@@ -221,8 +225,8 @@ void setup_error_screen_texture()
 	{
 		for (int y = 0; y < SCREEN_HEIGHT; y++)
 		{
-			const int index = y * pitch + col_remainder * 4;
-			assign(pixels, index, color, color_remainder * 3);
+			const int index = y * pitch + col_remainder * SDL_BPP;
+			assign(pixels, index, color, color_remainder * CUSTOM_BPP);
 		}
 		col_remainder++;
 	}
@@ -237,6 +241,7 @@ int main (int, char**)
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		std::fprintf(stderr, "Error SDL Init: %s", SDL_GetError());
+		SDL_Quit();
 		return 1;
 	}
 
