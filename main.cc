@@ -4,7 +4,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #define DEBUG
-#define LEVEL 3 
+#define LEVEL 0 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -54,7 +54,7 @@ std::vector<Blob*> blobs(7);
 
 int dist(int x1, int y1, int x2, int y2)
 {
-	int d = sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+	int d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 	d = d > 0xff ? 0xff : (d < 0x0 ? 0x0 : d);
 	return d;
 }
@@ -105,6 +105,30 @@ RgbColor HSV2RGB(HsvColor hsv)
     return rgb;
 }
 
+void assign(const void* pixel, const int& index, const int& value)
+{
+	for (int i = 0; i < 3; i++)
+		((unsigned char*)pixel)[index + i] = value;
+}
+
+void assign(const void *pixel, const int& index, const int& r, const int& g, const int& b)
+{
+	((unsigned char*)pixel)[index + 0] = r;
+	((unsigned char*)pixel)[index + 1] = g;
+	((unsigned char*)pixel)[index + 2] = b;
+}
+
+void assign(const void *pixel, const int& index, const RgbColor& rgb)
+{
+	assign(pixel, index, rgb.r, rgb.g, rgb.b);
+}
+
+void assign(const void *pixel_left, const int& index_left, const int* pixel_right, const int& index_right)
+{
+	for (int i = 0; i < 3; i++)
+		((unsigned char*)pixel_left)[index_left + i] = pixel_right[index_right + i];
+}
+
 void setup_success_screen_texture()
 {
 	void* pixels = nullptr;
@@ -132,14 +156,10 @@ void setup_success_screen_texture()
 			if (sum > 0xff) sum = 0xff;
 #endif
 #if LEVEL == 0
-			((unsigned char*)pixels)[index + 0] = sum;
-			((unsigned char*)pixels)[index + 1] = sum;
-			((unsigned char*)pixels)[index + 2] = sum;
+			assign(pixels, index, sum);
 #endif
 #if LEVEL == 1
-			((unsigned char*)pixels)[index + 0] = 0x0;
-			((unsigned char*)pixels)[index + 1] = sum;
-			((unsigned char*)pixels)[index + 2] = 0x0;
+			assign(pixels, index, 0x0, sum, 0x0);
 #endif
 #if LEVEL == 2 || LEVEL == 3 
 			HsvColor hsv;
@@ -147,9 +167,7 @@ void setup_success_screen_texture()
 			hsv.s = 0xff;
 			hsv.v = 0xff;
 			const RgbColor& rgb = HSV2RGB(hsv);
-			((unsigned char*)pixels)[index + 0] = rgb.r;
-			((unsigned char*)pixels)[index + 1] = rgb.g;
-			((unsigned char*)pixels)[index + 2] = rgb.b;
+			assign(pixels, index, rgb);
 #endif
 		}
 	}
@@ -182,10 +200,8 @@ void setup_error_screen_texture()
 		{
 			for (int y = 0; y < SCREEN_HEIGHT; y++)
 			{
-				int index = y * pitch + x * 4;
-				((unsigned char*)pixels)[index + 0] = color[(j * 3) % cnt + 0];
-				((unsigned char*)pixels)[index + 1] = color[(j * 3) % cnt + 1];
-				((unsigned char*)pixels)[index + 2] = color[(j * 3) % cnt + 2];
+				const int index = y * pitch + x * 4;
+				assign(pixels, index, color, (j * 3) % cnt);
 			}
 			col_remainder = x;
 		}
@@ -194,10 +210,8 @@ void setup_error_screen_texture()
 	{
 		for (int y = 0; y < SCREEN_HEIGHT; y++)
 		{
-			int index = y * pitch + col_remainder * 4;
-			((unsigned char*)pixels)[index + 0] = color[(cnt - col) + 0];
-			((unsigned char*)pixels)[index + 1] = color[(cnt - col) + 1];
-			((unsigned char*)pixels)[index + 2] = color[(cnt - col) + 2];
+			const int index = y * pitch + col_remainder * 4;
+			assign(pixels, index, color, cnt - col);
 		}
 		col_remainder++;
 	}
