@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 
 //#define DEBUG
-#define LEVEL 0 
+//#define LEVEL 4
 
 #if LEVEL > 3
 #undef LEVEL
@@ -225,14 +225,13 @@ void setup_error_screen_texture()
 		}
 		color_remainder = j;
 	}
-	while (col_remainder < SCREEN_WIDTH)
+	while (++col_remainder < SCREEN_WIDTH)
 	{
 		for (int y = 0; y < SCREEN_HEIGHT; y++)
 		{
 			const int index = y * pitch + col_remainder * SDL_BPP;
 			assign(pixels, index, color, color_remainder * CUSTOM_BPP);
 		}
-		col_remainder++;
 	}
 	SDL_UnlockTexture(screen_texture);
 }
