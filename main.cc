@@ -16,7 +16,7 @@ using byte = unsigned char;
 
 constexpr int octet         = 8; // use for algorithm HSV to RGV rule
 constexpr int CUSTOM_BPP    = 3;
-constexpr int SDL_BPP 	 	= 4;
+constexpr int SDL_BPP       = 4;
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
