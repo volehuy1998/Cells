@@ -105,7 +105,7 @@ RgbColor HSV2RGB(HsvColor hsv)
     return rgb;
 }
 
-void setup_screen_texture()
+void setup_success_screen_texture()
 {
 	void* pixels = nullptr;
 	int pitch = 0;
@@ -128,8 +128,10 @@ void setup_screen_texture()
 				}
 
 			}
-#if LEVEL == 0
+#if LEVEL % 2 == 0
 			if (sum > 0xff) sum = 0xff;
+#endif
+#if LEVEL == 0
 			((unsigned char*)pixels)[index + 0] = sum;
 			((unsigned char*)pixels)[index + 1] = sum;
 			((unsigned char*)pixels)[index + 2] = sum;
@@ -138,8 +140,6 @@ void setup_screen_texture()
 			((unsigned char*)pixels)[index + 0] = 0x0;
 			((unsigned char*)pixels)[index + 1] = sum;
 			((unsigned char*)pixels)[index + 2] = 0x0;
-#elif LEVEL == 2
-			if (sum > 0xff) sum = 0xff;
 #endif
 #if LEVEL == 2 || LEVEL == 3 
 			HsvColor hsv;
@@ -154,6 +154,42 @@ void setup_screen_texture()
 		}
 	}
 	SDL_UnlockTexture(screen_texture);
+}
+
+void setup_error_screen_texture()
+{
+	void* pixels = nullptr;
+	int pitch = 0;
+	int color[] = 
+	{ 
+		0xff, 0xff, 0xff, // white
+		0xff, 0xf0, 0x00, // yellow
+		0x00, 0xff, 0xd4, // bad blue
+		0x49, 0xff, 0x00, // green
+		0xff, 0x00, 0xc9, // purple
+		0xff, 0x00, 0x00, // red
+		0x00, 0x00, 0xff, // blue
+	};
+	constexpr int col = 3;
+	constexpr int cnt = sizeof(int) * col;
+	constexpr int colors = sizeof color / cnt;
+	constexpr int stride = SCREEN_WIDTH / colors;
+	SDL_LockTexture(screen_texture, nullptr, &pixels, &pitch);
+	for (int j = 0, i = 0; j < colors; j++, i = (i + 3) % cnt)
+	{
+		for (int x = j * stride; x < (j + 1) * stride; x++)
+		{
+			for (int y = 0; y < SCREEN_HEIGHT; y++)
+			{
+				int index = y * pitch + x * 4;
+				((unsigned char*)pixels)[index + 0] = color[i + 0];
+				((unsigned char*)pixels)[index + 1] = color[i + 1];
+				((unsigned char*)pixels)[index + 2] = color[i + 2];
+			}
+		}
+	}
+	SDL_UnlockTexture(screen_texture);
+
 }
 
 int main (int, char**)
@@ -181,7 +217,11 @@ int main (int, char**)
 				case SDL_QUIT: quit = SDL_TRUE; break;
 			}
 		}
-		setup_screen_texture();
+#ifdef LEVEL
+		setup_success_screen_texture();
+#else
+		setup_error_screen_texture();
+#endif
 		SDL_RenderCopy(renderer, screen_texture, nullptr, nullptr);
 		for (auto& b : blobs) b->update();
 		SDL_RenderPresent(renderer);
