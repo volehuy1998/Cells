@@ -1,3 +1,5 @@
+# sudo apt-get install libsdl2-dev -y
+
 c:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g++ *.cc -lSDL2<br/>
 r:<br/>
