@@ -5,7 +5,11 @@
 #include <SDL2/SDL.h>
 
 #define DEBUG
-#define LEVEL 3 
+#define LEVEL 4 
+
+#if LEVEL > 3
+#undef LEVEL
+#endif
 
 constexpr int CUSTOM_BPP    = 3;
 constexpr int SDL_BPP 	 	= 4;
@@ -234,6 +238,7 @@ void setup_error_screen_texture()
 
 int main (int, char**)
 {
+
 #ifdef DEBUG
 	std::freopen("out", "w", stderr);
 #endif
