@@ -1,10 +1,12 @@
 #include <cmath>
+#include <stdio.h>
 #include <random> 
 #include <vector>
 #include <SDL2/SDL.h>
-
-constexpr int SCREEN_WIDTH  = 800;
-constexpr int SCREEN_HEIGHT = 600;
+#define DEBUG 1
+#define LEVEL 1 
+constexpr int SCREEN_WIDTH  = 550;
+constexpr int SCREEN_HEIGHT = 400;
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -35,20 +37,20 @@ struct Blob
 	{
 		pos.x = random_machine.get(50, SCREEN_WIDTH - 50);
 		pos.y = random_machine.get(50, SCREEN_HEIGHT - 50);
-		vel.x = random_machine.get(-7, 7);
-		vel.y = random_machine.get(-7, 7);
-		r = 65;
+		vel.x = random_machine.get( 3,  7);
+		vel.y = random_machine.get(-7, -3);
+		r = 50;
 	}
 	void update()
 	{
 		pos.x += vel.x;
 		pos.y += vel.y;
-		if (pos.x + r - 15 > SCREEN_WIDTH  || pos.x - r + 15 < 0) vel.x *= -1;
-		if (pos.y + r - 15 > SCREEN_HEIGHT || pos.y - r + 15 < 0) vel.y *= -1;
+		if (pos.x + r - 5 > SCREEN_WIDTH  || pos.x - r + 5 < 0) vel.x *= -1;
+		if (pos.y + r - 5 > SCREEN_HEIGHT || pos.y - r + 5 < 0) vel.y *= -1;
 	}
 };
 
-std::vector<Blob*> blobs(10);
+std::vector<Blob*> blobs(5);
 
 int dist(int x1, int y1, int x2, int y2)
 {
@@ -116,10 +118,24 @@ void setup_screen_texture()
 			int sum = 0x0;
 			for (auto& blob : blobs) {
 				int d = dist(x, y, blob->pos.x, blob->pos.y);
-				sum += 40 * blobs[0]->r / d;
-				if (x == blob->pos.x && y == blob->pos.y && sum < 0xff) sum = 0xff;
+				sum += 80 * blobs[0]->r / d;
+				if (x == blob->pos.x && y == blob->pos.y && sum < 0xff)
+				{
+#ifdef DEBUG
+					fprintf(stderr, "%d %d %d %d\n", x, y, d, sum);
+#endif
+					sum = 0xff;
+				}
 
 			}
+#if LEVEL == 1
+			((unsigned char*)pixels)[index + 0] = 0x0;
+			((unsigned char*)pixels)[index + 1] = sum;
+			((unsigned char*)pixels)[index + 2] = 0x0;
+#elif LEVEL == 2
+			if (sum > 0xff) sum = 0xff;
+#endif
+#if LEVEL == 2 || LEVEL == 3 
 			HsvColor hsv;
 			hsv.h = sum;
 			hsv.s = 0xff;
@@ -128,7 +144,7 @@ void setup_screen_texture()
 			((unsigned char*)pixels)[index + 0] = rgb.r;
 			((unsigned char*)pixels)[index + 1] = rgb.g;
 			((unsigned char*)pixels)[index + 2] = rgb.b;
-			
+#endif
 		}
 	}
 	SDL_UnlockTexture(screen_texture);
@@ -136,6 +152,9 @@ void setup_screen_texture()
 
 int main (int, char**)
 {
+#ifdef DEBUG
+	freopen("out", "w", stderr);
+#endif
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		SDL_Log("Error SDL Init: %s", SDL_GetError());
