@@ -4,7 +4,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #define DEBUG
-#define LEVEL 0 
+//#define LEVEL 0 
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -193,6 +193,7 @@ void setup_error_screen_texture()
 	constexpr int colors = cnt / col;
 	constexpr int stride = SCREEN_WIDTH / colors;
 	int col_remainder = 0;
+	int color_remainder = 0;
 	SDL_LockTexture(screen_texture, nullptr, &pixels, &pitch);
 	for (int j = 0; j < colors; j++)
 	{
@@ -205,13 +206,14 @@ void setup_error_screen_texture()
 			}
 			col_remainder = x;
 		}
+		color_remainder = j;
 	}
 	while (col_remainder < SCREEN_WIDTH)
 	{
 		for (int y = 0; y < SCREEN_HEIGHT; y++)
 		{
 			const int index = y * pitch + col_remainder * 4;
-			assign(pixels, index, color, cnt - col);
+			assign(pixels, index, color, color_remainder * 3);
 		}
 		col_remainder++;
 	}
