@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <random> 
 #include <vector>
-#include <memory>
 #include <SDL2/SDL.h>
 
 #define DEBUG
