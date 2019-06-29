@@ -16,7 +16,7 @@ using byte = unsigned char;
 
 constexpr int octet         = 8; // use for algorithm HSV to RGV rule
 constexpr int CUSTOM_BPP    = 3;
-constexpr int SDL_BPP 	    = 4;
+constexpr int SDL_BPP 	 	= 4;
 constexpr int SCREEN_WIDTH  = 550;
 constexpr int SCREEN_HEIGHT = 400;
 
@@ -206,9 +206,8 @@ void setup_error_screen_texture()
 		0xff, 0x00, 0x00, // red
 		0x00, 0x00, 0xff, // blue
 	};
-	constexpr int col = 3;
 	constexpr int cnt = sizeof color / sizeof(int);
-	constexpr int colors = cnt / col;
+	constexpr int colors = cnt / CUSTOM_BPP;
 	constexpr int stride = SCREEN_WIDTH / colors;
 	int col_remainder = 0;
 	int color_remainder = 0;
