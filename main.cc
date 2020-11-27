@@ -4,6 +4,10 @@
 #include <vector>
 #include <SDL2/SDL.h>
 
+#if WIN32
+#undef main
+#endif
+
 //#define DEBUG
 //#define LEVEL 4
 
@@ -238,9 +242,13 @@ void setup_error_screen_texture()
 
 int main (int, char**)
 {
-
 #ifdef DEBUG
+#if WIN32
+	FILE* file = NULL;
+	freopen_s(&file, "out", "w", stdout);
+#else
 	std::freopen("out", "w", stderr);
+#endif
 #endif
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -271,7 +279,14 @@ int main (int, char**)
 		blobs.update();
 		SDL_RenderPresent(renderer);
 	}
-	
+
+#if WIN32
+	if (file != NULL)
+	{
+		fclose(file);
+	}
+#endif
+
 	SDL_DestroyTexture(screen_texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
